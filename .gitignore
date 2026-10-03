@@ -1,0 +1,6 @@
+bend-merkle-example
+*.c
+*.js
+*.mjs
+*.gpu
+__pycache__/
