@@ -53,13 +53,8 @@ def Chunk.from_hex(s: String) -> Maybe<&2, List<&2, U32>>:
 def Chunk.length(+c: List<&2, U32>) -> Nat:
   B.Bytes.len(c)
 
-# A chunk holding `n` as a little-endian 64-bit integer, zero padded. This is
-# the SSZ length mix-in and the padding rule for short byte sequences.
-def Chunk.u64_le(n: Nat) -> List<&2, U32>:
-  B.Bytes.append(B.Bytes.u64_le(n), B.Bytes.zeros(24n))
-
-# Byte sequences longer than one chunk are split into 32-byte chunks, the last
-# one zero padded, which is how SSZ packs raw bytes before merkleizing.
+# Byte sequences longer than one chunk are split into 32-byte chunks, with the
+# final chunk padded on the right with zero bytes.
 def Chunk.pad_right(c: List<&2, U32>) -> List<&2, U32>:
   +head = B.Bytes.take(c, 32n)
   +n = List.length(&2, U32, head)

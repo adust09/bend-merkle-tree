@@ -6,8 +6,8 @@ import ../src/merkle/sha256.bend as S
 
 # Golden vectors for the Merkle library.
 #
-# The SHA-256 expectations come from the independent Python implementation in
-# tests/merkle_golden.py using hashlib.sha256 and SSZ tree-shape rules. The
+# The SHA-256 expectations come from the independent perfect-tree reference in
+# tests/merkle_golden.py using hashlib.sha256. The
 # `mix-` lines run the same tree code through a different pair hash, which is
 # what makes "generic over the hash function" a tested property rather than a
 # claim.
@@ -106,8 +106,6 @@ def main() -> IO(Unit):
     IO.print("mzl-8-8=" ++ C.Chunk.hex(M.tree.merkleize_limit(~S.sha256_pair, chunks(8n), 8n)))
     IO.print("checked-valid=" ++ Bool.show(checked_valid()))
     IO.print("checked-overflow=" ++ Bool.show(checked_overflow()))
-    IO.print("mixlen-5=" ++ C.Chunk.hex(M.tree.mix_in_length(~S.sha256_pair, cs(0n), 5n)))
-    IO.print("mixlen-0=" ++ C.Chunk.hex(M.tree.mix_in_length(~S.sha256_pair, C.Chunk.zero(), 0n)))
     IO.print("pow2-0=" ++ Nat.show(M.tree.pow2(0n)))
     IO.print("pow2-1=" ++ Nat.show(M.tree.pow2(1n)))
     IO.print("pow2-5=" ++ Nat.show(M.tree.pow2(5n)))
@@ -120,7 +118,6 @@ def main() -> IO(Unit):
     IO.print("chunk-count-32=" ++ Nat.show(C.Chunk.chunk_count(32n)))
     IO.print("chunk-count-33=" ++ Nat.show(C.Chunk.chunk_count(33n)))
     IO.print("chunk-count-100=" ++ Nat.show(C.Chunk.chunk_count(100n)))
-    IO.print("u64le-1000=" ++ C.Chunk.hex(C.Chunk.u64_le(1000n)))
     IO.print("pack-4=" ++ show_chunks(C.Chunk.pack(bytes_range(4n, 0n, Nil{})), ","))
     IO.print("pack-100=" ++ show_chunks(C.Chunk.pack(bytes_range(100n, 0n, Nil{})), ","))
     IO.print("bytes-abc=" ++ S.sha256_hex(97 <> 98 <> 99 <> Nil{}))
