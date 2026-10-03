@@ -1,0 +1,41 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Bend 2.0.34
+        shell: bash
+        run: |
+          set -euo pipefail
+          url="https://github.com/bendlang/bend/releases/download/v2.0.34/bend-2.0.34-linux-x64.tar.gz"
+          curl -fsSL "$url" -o bend.tar.gz
+          echo "78106a97af242429dcc057258eb8d10f69cddebcd5e263022185a52d003e09bf  bend.tar.gz" | sha256sum -c -
+          mkdir -p "$HOME/.bend"
+          tar -xzf bend.tar.gz -C "$HOME/.bend" --strip-components=1
+          echo "$HOME/.bend/bin" >> "$GITHUB_PATH"
+
+      - name: Verify Bend version
+        run: bend --help | head -n 1 | grep -F "Bend 2.0.34"
+
+      - name: Check and test
+        run: make test
+
+      - name: Build native example
+        run: make build
+
+      - name: Run native example
+        run: |
+          expected="f5a5fd42d16a20302798ef6ed309979b43003d2320d9f0e8ea9831a92759fb4b"
+          test "$(./bend-merkle-example)" = "$expected"
