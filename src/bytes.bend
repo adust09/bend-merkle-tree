@@ -1,7 +1,7 @@
 import Base
 
 # Byte strings are lists of U32 values in 0..255.
-# Roots and SSZ chunks are 32-byte lists.
+# Merkle roots and chunks are 32-byte lists.
 
 def Bytes.len(xs: List<&2, U32>) -> Nat:
   List.length(&2, U32, xs)

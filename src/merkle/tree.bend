@@ -9,14 +9,11 @@ import ./chunk.bend as C
 #   merkleize(~MyHash.pair, chunks)
 #   merkleize_limit(~MyHash.pair, chunks, 1024n)
 #
-# The tree shape follows the SSZ specification: chunks are zero padded up to the
-# next power of two, a capacity (`limit`) fixes the width instead and the data
-# subtree is lifted to it with all-zero siblings, and the empty case is the
-# all-zero tree of that width. This is the same shape `ssz.trees.merkleize` in
-# eth-ssz computes, which is what leanSpec runs on.
+# Chunks are zero padded up to the next power of two. A capacity (`limit`)
+# fixes the width instead, lifting the data subtree with all-zero siblings. An
+# empty tree is the all-zero tree at the selected width.
 
-# Smallest power of two greater than or equal to `n`. Returns 1 for 0 and 1,
-# matching `ssz.chunks.next_pow2`.
+# Smallest power of two greater than or equal to `n`. Returns 1 for 0 and 1.
 def tree.next_pow2(fuel: Nat, phase: Nat, +n: Nat, +p: Nat, le: Bool) -> Nat:
   match fuel:
     case 0n:
@@ -34,7 +31,7 @@ def tree.next_pow2(fuel: Nat, phase: Nat, +n: Nat, +p: Nat, le: Bool) -> Nat:
 
 def tree.pow2(n: Nat) -> Nat:
   # `next_pow2` alternates comparison and doubling phases, so two fuel units
-  # cover each bit of an SSZ u64 length.
+  # cover each bit of a 64-bit length.
   tree.next_pow2(128n, 0n, n, 1n, False{})
 
 # Depth of a perfect tree whose leaf count is a power of two: 1 -> 0, 8 -> 3.
@@ -108,7 +105,7 @@ def tree.pad_zeros(
   List.append(&2, List<&2, U32>, xs, tree.zero_chunks(need, Nil{}))
 
 # Fold a chunk list padded to the perfect width `n` down to a single root.
-# `fuel` bounds the recursion at the 64-bit SSZ length limit.
+# `fuel` bounds the recursion at a 64-bit tree-width limit.
 def tree.merkle_pow2(
   ~hash: List<&2, U32> -> List<&2, U32> -> List<&2, U32>,
   fuel: Nat,
@@ -128,8 +125,8 @@ def tree.merkle_pow2(
           next = tree.pair_all(~hash, xs, 0n, C.Chunk.zero())
           tree.merkle_pow2(~hash, p, Nat.div(n, 2n), next)
 
-# Merkle root of `xs` with zero padding up to a power of two. The root of the
-# empty sequence is the 32-byte zero chunk, as in the SSZ spec (`limit` absent).
+# Merkle root of `xs` with zero padding up to a power of two. The root of an
+# empty sequence is the 32-byte zero chunk.
 def tree.merkleize(
   ~hash: List<&2, U32> -> List<&2, U32> -> List<&2, U32>,
   +xs: List<&2, List<&2, U32>>
@@ -204,12 +201,3 @@ def tree.merkleize_limit_checked(
 ) -> Maybe<&2, List<&2, U32>>:
   +n = List.length(&2, List<&2, U32>, xs)
   tree.merkleize_limit_if(~hash, Nat.is_le(n, limit), xs, limit)
-
-# SSZ mix-in for variable-length collections: hash the root with the length
-# encoded as a little-endian 64-bit chunk.
-def tree.mix_in_length(
-  ~hash: List<&2, U32> -> List<&2, U32> -> List<&2, U32>,
-  root: List<&2, U32>,
-  +length: Nat
-) -> List<&2, U32>:
-  hash(root, C.Chunk.u64_le(length))

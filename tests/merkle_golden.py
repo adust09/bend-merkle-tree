@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate SSZ-compatible Merkle golden vectors with Python stdlib only."""
+"""Generate Merkle tree golden vectors with Python stdlib only."""
 
 from __future__ import annotations
 
@@ -80,12 +80,7 @@ def sha_lines(chunks: list[bytes]) -> list[str]:
     lines += [f"zero-{depth}={zero_tree(depth).hex()}" for depth in ZERO_DEPTHS]
     for key, count, limit in MERKLEIZE_CASES:
         lines.append(f"{key}={merkleize(chunks[:count], limit).hex()}")
-    lines += [
-        "checked-valid=True",
-        "checked-overflow=True",
-        f"mixlen-5={pair_hash(chunks[0], (5).to_bytes(32, 'little')).hex()}",
-        f"mixlen-0={pair_hash(ZERO_CHUNK, ZERO_CHUNK).hex()}",
-    ]
+    lines += ["checked-valid=True", "checked-overflow=True"]
     return lines
 
 
@@ -103,7 +98,6 @@ def utility_lines(chunks: list[bytes]) -> list[str]:
         "chunk-count-32=1",
         "chunk-count-33=2",
         "chunk-count-100=4",
-        "u64le-1000=" + (1000).to_bytes(8, "little").ljust(32, b"\0").hex(),
         "pack-4=" + packed(bytes(range(4))),
         "pack-100=" + packed(bytes(range(100))),
         "bytes-abc=" + sha256(b"abc").hexdigest(),
